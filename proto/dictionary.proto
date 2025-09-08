@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package dictionary;
+
+option go_package = "github.com/cheel98/flashcard-backend/proto/dictionary";
+
+import "google/protobuf/timestamp.proto";
+
+// Dictionary服务定义
+service DictionaryService {
+  // 创建词典记录
+  rpc CreateDictionary(CreateDictionaryRequest) returns (CreateDictionaryResponse);
+  // 根据唯一翻译信息查询词典
+  rpc GetDictionaryByUniqueTranslation(GetDictionaryByUniqueTranslationRequest) returns (GetDictionaryByUniqueTranslationResponse);
+  // 获取词典详细信息
+  rpc GetDictionaryWithDetails(GetDictionaryWithDetailsRequest) returns (GetDictionaryWithDetailsResponse);
+}
+
+// 创建词典请求
+message CreateDictionaryRequest {
+  string source_lang = 1;
+  string target_lang = 2;
+  string source_text = 3;
+  string translated_text = 4;
+  string part_of_speech = 5;
+  string ipa = 6;
+  string example_sentence = 7;
+}
+
+// 创建词典响应
+message CreateDictionaryResponse {
+  Dictionary dictionary = 1;
+}
+
+// 根据唯一翻译查询请求
+message GetDictionaryByUniqueTranslationRequest {
+  string source_lang = 1;
+  string target_lang = 2;
+  string source_text = 3;
+}
+
+// 根据唯一翻译查询响应
+message GetDictionaryByUniqueTranslationResponse {
+  Dictionary dictionary = 1;
+}
+
+// 获取词典详情请求
+message GetDictionaryWithDetailsRequest {
+  uint64 dictionary_id = 1;
+}
+
+// 获取词典详情响应
+message GetDictionaryWithDetailsResponse {
+  Dictionary dictionary = 1;
+}
+
+// 词典消息类型
+message Dictionary {
+  uint64 id = 1;
+  string source_lang = 2;
+  string target_lang = 3;
+  string source_text = 4;
+  string translated_text = 5;
+  string part_of_speech = 6;
+  string ipa = 7;
+  string example_sentence = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+  repeated DictionaryAudio audios = 11;
+  repeated DictionaryMetadata metadata = 12;
+}
+
+// 词典音频
+message DictionaryAudio {
+  uint64 id = 1;
+  uint64 dictionary_id = 2;
+  string audio_path = 3;
+  string accent = 4;
+}
+
+// 词典元数据
+message DictionaryMetadata {
+  uint64 id = 1;
+  uint64 dictionary_id = 2;
+  string key = 3;
+  string value = 4;
+}

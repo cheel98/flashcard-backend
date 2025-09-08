@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package favorite;
+
+option go_package = "github.com/cheel98/flashcard-backend/proto/favorite";
+
+import "google/protobuf/timestamp.proto";
+
+// Favorite服务定义
+service FavoriteService {
+  // 添加收藏
+  rpc AddFavorite(AddFavoriteRequest) returns (AddFavoriteResponse);
+  // 按memory升序查询收藏
+  rpc GetFavoritesByMemoryAsc(GetFavoritesByMemoryAscRequest) returns (GetFavoritesByMemoryAscResponse);
+  // 按学习记录查询收藏
+  rpc GetFavoritesByStudyRecord(GetFavoritesByStudyRecordRequest) returns (GetFavoritesByStudyRecordResponse);
+  // 按记忆深度查询收藏
+  rpc GetFavoritesByMemoryDepth(GetFavoritesByMemoryDepthRequest) returns (GetFavoritesByMemoryDepthResponse);
+  // 添加学习记录
+  rpc AddStudyRecord(AddStudyRecordRequest) returns (AddStudyRecordResponse);
+}
+
+// 添加收藏请求
+message AddFavoriteRequest {
+  string user_id = 1;
+  uint64 dictionary_id = 2;
+  uint64 memory_depth = 3;
+}
+
+// 添加收藏响应
+message AddFavoriteResponse {
+  Favorite favorite = 1;
+}
+
+// 按memory升序查询请求
+message GetFavoritesByMemoryAscRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+// 按memory升序查询响应
+message GetFavoritesByMemoryAscResponse {
+  repeated Favorite favorites = 1;
+}
+
+// 按学习记录查询请求
+message GetFavoritesByStudyRecordRequest {
+  string user_id = 1;
+  string result = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+// 按学习记录查询响应
+message GetFavoritesByStudyRecordResponse {
+  repeated Favorite favorites = 1;
+}
+
+// 按记忆深度查询请求
+message GetFavoritesByMemoryDepthRequest {
+  string user_id = 1;
+  uint64 memory_depth = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+// 按记忆深度查询响应
+message GetFavoritesByMemoryDepthResponse {
+  repeated Favorite favorites = 1;
+}
+
+// 添加学习记录请求
+message AddStudyRecordRequest {
+  string result = 1;
+  string remark = 2;
+}
+
+// 添加学习记录响应
+message AddStudyRecordResponse {
+  StudyRecord study_record = 1;
+}
+
+// 收藏消息类型
+message Favorite {
+  string id = 1;
+  string user_id = 2;
+  uint64 dictionary_id = 3;
+  uint64 memory_depth = 4;
+  repeated StudyRecord favorite_records = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+// 学习记录
+message StudyRecord {
+  string id = 1;
+  string result = 2; // remembered, fuzzy, strange
+  string remark = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}

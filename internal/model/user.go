@@ -8,6 +8,7 @@ type User struct {
 	Email            string    `gorm:"column:email;uniqueIndex;type:varchar(255)" json:"email"`
 	Phone            string    `gorm:"column:phone;uniqueIndex;type:varchar(11)" json:"phone"`
 	PasswordHash     string    `gorm:"column:password_hash;type:varchar(255)" json:"-"`
+	RefreshToken     string    `gorm:"column:refresh_token;type:text" json:"-"` // 刷新令牌
 	Avatar           string    `gorm:"column:avatar;type:varchar(255)" json:"-"`
 	Nickname         string    `gorm:"column:nickname" json:"-"`
 	MemberShipLevel  uint64    `gorm:"column:member_ship_level;type:bigint unsigned" json:"-"`

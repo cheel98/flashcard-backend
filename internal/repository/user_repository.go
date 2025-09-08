@@ -18,6 +18,12 @@ type UserRepository interface {
 	GetUserPreferences(userID string) (*model.UserPreferences, error)
 	// GetUserLogs 获取用户操作日志
 	GetUserLogs(userID string, limit, offset int) ([]*model.UserLogs, error)
+	// SaveRefreshToken 保存刷新令牌
+	SaveRefreshToken(userID, refreshToken string) error
+	// GetUserByRefreshToken 根据刷新令牌获取用户
+	GetUserByRefreshToken(refreshToken string) (*model.User, error)
+	// ClearRefreshToken 清除刷新令牌
+	ClearRefreshToken(userID string) error
 }
 
 // userRepository 用户仓储实现
@@ -96,4 +102,35 @@ func (r *userRepository) GetUserLogs(userID string, limit, offset int) ([]*model
 		return nil, err
 	}
 	return logs, nil
+}
+
+// SaveRefreshToken 保存刷新令牌
+func (r *userRepository) SaveRefreshToken(userID, refreshToken string) error {
+	err := r.db.Model(&model.User{}).Where("id = ?", userID).Update("refresh_token", refreshToken).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetUserByRefreshToken 根据刷新令牌获取用户
+func (r *userRepository) GetUserByRefreshToken(refreshToken string) (*model.User, error) {
+	var user model.User
+	err := r.db.Where("refresh_token = ? AND refresh_token != ''", refreshToken).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("无效的刷新令牌")
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
+// ClearRefreshToken 清除刷新令牌
+func (r *userRepository) ClearRefreshToken(userID string) error {
+	err := r.db.Model(&model.User{}).Where("id = ?", userID).Update("refresh_token", "").Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

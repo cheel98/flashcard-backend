@@ -1,34 +1,50 @@
 package handler
 
 import (
+	"github.com/cheel98/flashcard-backend/internal/grpc"
+	"github.com/cheel98/flashcard-backend/internal/service"
+	"github.com/cheel98/flashcard-backend/proto/generated/dictionary"
+	"github.com/cheel98/flashcard-backend/proto/generated/favorite"
+	"github.com/cheel98/flashcard-backend/proto/generated/user"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
+	grpcServer "google.golang.org/grpc"
 )
 
 // Handler gRPC处理器
 type Handler struct {
-	logger *zap.Logger
+	logger            *zap.Logger
+	userService       service.UserService
+	dictionaryService service.DictionaryService
+	favoriteService   service.FavoriteService
 }
 
 // NewHandler 创建新的处理器
 func NewHandler(
 	logger *zap.Logger,
+	userService service.UserService,
+	dictionaryService service.DictionaryService,
+	favoriteService service.FavoriteService,
 ) *Handler {
 	return &Handler{
-		logger: logger,
+		logger:            logger,
+		userService:       userService,
+		dictionaryService: dictionaryService,
+		favoriteService:   favoriteService,
 	}
 }
 
 // RegisterServices 注册gRPC服务
-func (h *Handler) RegisterServices(server *grpc.Server) {
-	// 注册用户服务
-	//userHandler := NewUserHandler(h.userService, h.logger)
+func (h *Handler) RegisterServices(server *grpcServer.Server) {
+	// 创建gRPC服务实例
+	userGRPCServer := grpc.NewUserGRPCServer(h.userService)
+	dictionaryGRPCServer := grpc.NewDictionaryGRPCServer(h.dictionaryService, h.logger)
+	favoriteGRPCServer := grpc.NewFavoriteGRPCServer(h.favoriteService, h.logger)
 
-	h.logger.Info("gRPC services registered successfully")
+	// 注册gRPC服务
+	user.RegisterUserServiceServer(server, userGRPCServer)
+	dictionary.RegisterDictionaryServiceServer(server, dictionaryGRPCServer)
+	favorite.RegisterFavoriteServiceServer(server, favoriteGRPCServer)
 
-	// 注意：这里注释掉了实际的注册代码，因为需要先生成protobuf代码
-	// 在实际使用时，需要：
-	// 1. 安装protoc和相关插件
-	// 2. 生成Go代码：protoc --go_out=. --go-grpc_out=. proto/flashcard.proto
-	// 3. 取消注释上面的注册代码
+	h.logger.Info("gRPC services registered successfully",
+		zap.String("services", "UserService, DictionaryService, FavoriteService"))
 }

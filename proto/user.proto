@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "github.com/cheel98/flashcard-backend/proto/user";
+
+import "google/protobuf/timestamp.proto";
+
+// User服务定义
+service UserService {
+  // 用户登录
+  rpc Login(LoginRequest) returns (LoginResponse);
+  // 刷新访问令牌
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  // 用户登出
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  // 获取用户信息
+  rpc GetUserByID(GetUserByIDRequest) returns (GetUserByIDResponse);
+  // 获取用户设置
+  rpc GetUserSettings(GetUserSettingsRequest) returns (GetUserSettingsResponse);
+  // 获取用户偏好
+  rpc GetUserPreferences(GetUserPreferencesRequest) returns (GetUserPreferencesResponse);
+  // 获取用户日志
+  rpc GetUserLogs(GetUserLogsRequest) returns (GetUserLogsResponse);
+}
+
+// 登录请求
+message LoginRequest {
+  string email = 1;
+  string password_hash = 2;
+}
+
+// 登录响应
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+// 获取用户信息请求
+message GetUserByIDRequest {
+  string user_id = 1;
+}
+
+// 获取用户信息响应
+message GetUserByIDResponse {
+  User user = 1;
+}
+
+// 获取用户设置请求
+message GetUserSettingsRequest {
+  string user_id = 1;
+}
+
+// 获取用户设置响应
+message GetUserSettingsResponse {
+  UserSettings user_settings = 1;
+}
+
+// 获取用户偏好请求
+message GetUserPreferencesRequest {
+  string user_id = 1;
+}
+
+// 获取用户偏好响应
+message GetUserPreferencesResponse {
+  UserPreferences user_preferences = 1;
+}
+
+// 刷新令牌请求
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+// 刷新令牌响应
+message RefreshTokenResponse {
+  string access_token = 1;
+}
+
+// 登出请求
+message LogoutRequest {
+  string user_id = 1;
+}
+
+// 登出响应
+message LogoutResponse {
+  bool success = 1;
+}
+
+// 获取用户日志请求
+message GetUserLogsRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetUserLogsResponse {
+  repeated UserLogs user_logs = 1;
+}
+
+// 用户消息类型
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string phone = 4;
+  string avatar = 5;
+  string nickname = 6;
+  uint64 member_ship_level = 7;
+  google.protobuf.Timestamp membership_expire = 8;
+  uint64 balance = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+// 用户设置
+message UserSettings {
+  string user_id = 1;
+  string language_preference = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+// 用户偏好
+message UserPreferences {
+  string user_id = 1;
+  string tech_area = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+// 用户日志
+message UserLogs {
+  uint64 id = 1;
+  string user_id = 2;
+  string action = 3;
+  string ip_address = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}

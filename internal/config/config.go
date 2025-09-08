@@ -12,6 +12,7 @@ type Config struct {
 	Server   ServerConfig   `json:"server"`
 	Database DatabaseConfig `json:"database"`
 	Logger   LoggerConfig   `json:"logger"`
+	JWT      JWTConfig      `json:"jwt"`
 }
 
 // ServerConfig 服务器配置
@@ -38,6 +39,13 @@ type LoggerConfig struct {
 	Format string `json:"format"`
 }
 
+// JWTConfig JWT配置
+type JWTConfig struct {
+	SecretKey            string `json:"secret_key"`
+	AccessTokenDuration  int    `json:"access_token_duration"`  // 分钟
+	RefreshTokenDuration int    `json:"refresh_token_duration"` // 小时
+}
+
 // LoadConfig 加载配置
 func LoadConfig() (*Config, error) {
 	// 加载.env文件（如果存在）
@@ -61,6 +69,11 @@ func LoadConfig() (*Config, error) {
 		Logger: LoggerConfig{
 			Level:  getEnv("LOG_LEVEL", "info"),
 			Format: getEnv("LOG_FORMAT", "json"),
+		},
+		JWT: JWTConfig{
+			SecretKey:            getEnv("JWT_SECRET_KEY", "your-secret-key-change-in-production"),
+			AccessTokenDuration:  getEnvAsInt("JWT_ACCESS_TOKEN_DURATION", 15),  // 15分钟
+			RefreshTokenDuration: getEnvAsInt("JWT_REFRESH_TOKEN_DURATION", 168), // 7天
 		},
 	}
 
