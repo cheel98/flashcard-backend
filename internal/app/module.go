@@ -1,11 +1,12 @@
 package app
 
 import (
-	"flashcard-backend/internal/config"
-	"flashcard-backend/internal/database"
-	"flashcard-backend/internal/handler"
-	"flashcard-backend/internal/service"
-	"flashcard-backend/pkg/logger"
+	"github.com/cheel98/flashcard-backend/internal/config"
+	"github.com/cheel98/flashcard-backend/internal/database"
+	"github.com/cheel98/flashcard-backend/internal/handler"
+	"github.com/cheel98/flashcard-backend/internal/repository"
+	"github.com/cheel98/flashcard-backend/internal/service"
+	"github.com/cheel98/flashcard-backend/pkg/logger"
 	"go.uber.org/fx"
 )
 
@@ -17,6 +18,8 @@ var Module = fx.Options(
 	logger.Module,
 	// 数据库模块
 	database.Module,
+	// 仓储模块
+	repository.Module,
 	// 服务模块
 	service.Module,
 	// 处理器模块

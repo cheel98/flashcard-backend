@@ -2,8 +2,7 @@ package database
 
 import (
 	"fmt"
-
-	"flashcard-backend/internal/config"
+	"github.com/cheel98/flashcard-backend/internal/config"
 
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"

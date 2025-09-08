@@ -2,10 +2,9 @@ package app
 
 import (
 	"fmt"
+	"github.com/cheel98/flashcard-backend/internal/config"
+	"github.com/cheel98/flashcard-backend/internal/handler"
 	"net"
-
-	"flashcard-backend/internal/config"
-	"flashcard-backend/internal/handler"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"

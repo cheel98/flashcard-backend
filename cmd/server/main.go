@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/cheel98/flashcard-backend/internal/app"
 	"log"
 
-	"flashcard-backend/internal/app"
 	"go.uber.org/fx"
 )
 

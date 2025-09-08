@@ -2,8 +2,8 @@ package model
 
 import "time"
 
-type DictionaryEnglishUS struct {
-	ID              string    `gorm:"column:id;primary_key" json:"id"`
+type Dictionary struct {
+	ID              uint64    `gorm:"primaryKey;autoIncrement;type:bigint unsigned" json:"id"`
 	SourceLang      string    `gorm:"type:varchar(10);not null;index:idx_unique_translation,unique" json:"source_lang"`
 	TargetLang      string    `gorm:"type:varchar(10);not null;index:idx_unique_translation,unique" json:"target_lang"`
 	SourceText      string    `gorm:"type:text;not null;index:idx_unique_translation,unique" json:"source_text"`

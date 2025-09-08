@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"flashcard-backend/internal/config"
+	"github.com/cheel98/flashcard-backend/internal/config"
 	"go.uber.org/zap"
 )
 

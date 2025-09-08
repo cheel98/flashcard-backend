@@ -6,5 +6,7 @@ import (
 
 // Module 处理器模块
 var Module = fx.Options(
-// fx.Provide(NewHandler),
+	fx.Provide(NewDictionaryHandler),
+	fx.Provide(NewUserHandler),
+	fx.Provide(NewFavoriteHandler),
 )

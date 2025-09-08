@@ -1,8 +1,10 @@
-module flashcard-backend
+module github.com/cheel98/flashcard-backend
 
 go 1.24
 
 require (
+	github.com/google/uuid v1.3.1
+	github.com/gorilla/mux v1.8.1
 	github.com/joho/godotenv v1.4.0
 	go.uber.org/fx v1.20.0
 	go.uber.org/zap v1.26.0
