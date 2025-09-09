@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"github.com/cheel98/flashcard-backend/internal/config"
 	"time"
 
 	"go.uber.org/fx"
@@ -9,22 +10,15 @@ import (
 // Module JWT模块
 var Module = fx.Options(
 	fx.Provide(
-		NewJWTManager,
+		NewJWTManagerFromConfig,
 	),
 )
 
-// JWTConfig JWT配置
-type JWTConfig struct {
-	SecretKey            string        `json:"secret_key"`
-	AccessTokenDuration  time.Duration `json:"access_token_duration"`
-	RefreshTokenDuration time.Duration `json:"refresh_token_duration"`
-}
-
 // NewJWTManagerFromConfig 从配置创建JWT管理器
-func NewJWTManagerFromConfig(config JWTConfig) *JWTManager {
+func NewJWTManagerFromConfig(config *config.Config) *JWTManager {
 	return NewJWTManager(
-		config.SecretKey,
-		config.AccessTokenDuration,
-		config.RefreshTokenDuration,
+		config.JWT.SecretKey,
+		time.Duration(config.JWT.AccessTokenDuration),
+		time.Duration(config.JWT.RefreshTokenDuration),
 	)
 }

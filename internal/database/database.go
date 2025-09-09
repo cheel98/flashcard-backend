@@ -11,12 +11,11 @@ import (
 
 // Database 数据库结构体
 type Database struct {
-	DB     *gorm.DB
-	logger *zap.Logger
+	DB *gorm.DB
 }
 
 // NewDatabase 创建新的数据库连接
-func NewDatabase(cfg *config.Config, logger *zap.Logger) (*Database, error) {
+func NewDatabase(cfg *config.Config, logger *zap.Logger) (*gorm.DB, error) {
 	// 构建数据库连接字符串
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s",
@@ -47,10 +46,7 @@ func NewDatabase(cfg *config.Config, logger *zap.Logger) (*Database, error) {
 
 	logger.Info("Database connected successfully")
 
-	return &Database{
-		DB:     db,
-		logger: logger,
-	}, nil
+	return db, nil
 }
 
 // Close 关闭数据库连接

@@ -8,6 +8,8 @@ import "google/protobuf/timestamp.proto";
 
 // User服务定义
 service UserService {
+  // 用户注册
+  rpc Register(RegisterRequest) returns (RegisterResponse);
   // 用户登录
   rpc Login(LoginRequest) returns (LoginResponse);
   // 刷新访问令牌
@@ -22,6 +24,22 @@ service UserService {
   rpc GetUserPreferences(GetUserPreferencesRequest) returns (GetUserPreferencesResponse);
   // 获取用户日志
   rpc GetUserLogs(GetUserLogsRequest) returns (GetUserLogsResponse);
+}
+
+// 注册请求
+message RegisterRequest {
+  string name = 1;
+  string email = 2;
+  string password_hash = 3;
+  string phone = 4;
+  string nickname = 5;
+}
+
+// 注册响应
+message RegisterResponse {
+  string user_id = 1;
+  string access_token = 2;
+  string refresh_token = 3;
 }
 
 // 登录请求

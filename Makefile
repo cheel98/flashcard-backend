@@ -42,7 +42,7 @@ clean:
 # 生成protobuf代码
 proto:
 	@echo "Generating protobuf code..."
-	protoc --go_out=. --go-grpc_out=. proto/flashcard.proto
+	protoc --go_out=. --go-grpc_out=. proto/*
 
 # 下载依赖
 deps:
