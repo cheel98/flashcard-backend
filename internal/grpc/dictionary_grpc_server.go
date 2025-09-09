@@ -114,11 +114,11 @@ func (s *DictionaryGRPCServer) convertModelToProto(dict *model.Dictionary) *dict
 		Ipa:             dict.IPA,
 		ExampleSentence: dict.ExampleSentence,
 		CreatedAt:       timestamppb.New(dict.CreatedAt),
-		UpdatedAt:       timestamppb.New(dict.UpdateAt),
+		UpdatedAt:       timestamppb.New(dict.UpdatedAt),
 	}
 
 	// 转换音频数据
-	for _, audio := range dict.DictionaryAudios {
+	for _, audio := range dict.Audios {
 		protoAudio := &dictionary.DictionaryAudio{
 			Id:           audio.ID,
 			DictionaryId: audio.DictionaryID,
@@ -129,7 +129,7 @@ func (s *DictionaryGRPCServer) convertModelToProto(dict *model.Dictionary) *dict
 	}
 
 	// 转换元数据
-	for _, metadata := range dict.DictionaryMetadatas {
+	for _, metadata := range dict.Metadata {
 		protoMetadata := &dictionary.DictionaryMetadata{
 			Id:           metadata.ID,
 			DictionaryId: metadata.DictionaryID,

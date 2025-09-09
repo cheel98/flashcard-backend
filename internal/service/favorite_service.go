@@ -68,7 +68,7 @@ func (s *favoriteService) AddFavorite(req *AddFavoriteRequest) (*model.Favorite,
 		MemoryDepth:  req.MemoryDepth,
 		Model: model.Model{
 			CreatedAt: time.Now(),
-			UpdateAt:  time.Now(),
+			UpdatedAt: time.Now(),
 		},
 	}
 
@@ -186,7 +186,7 @@ func (s *favoriteService) AddStudyRecord(req *AddStudyRecordRequest) (*model.Stu
 		Remark: req.Remark,
 		Model: model.Model{
 			CreatedAt: time.Now(),
-			UpdateAt:  time.Now(),
+			UpdatedAt: time.Now(),
 		},
 	}
 

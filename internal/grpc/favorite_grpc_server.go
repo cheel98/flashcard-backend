@@ -180,7 +180,7 @@ func (s *FavoriteGRPCServer) convertModelToProto(fav *model.Favorite) *favorite.
 		DictionaryId: fav.DictionaryID,
 		MemoryDepth:  fav.MemoryDepth,
 		CreatedAt:    timestamppb.New(fav.CreatedAt),
-		UpdatedAt:    timestamppb.New(fav.UpdateAt),
+		UpdatedAt:    timestamppb.New(fav.UpdatedAt),
 	}
 
 	// 转换学习记录
@@ -199,6 +199,6 @@ func (s *FavoriteGRPCServer) convertStudyRecordToProto(record *model.StudyRecord
 		Result:    record.Result,
 		Remark:    record.Remark,
 		CreatedAt: timestamppb.New(record.CreatedAt),
-		UpdatedAt: timestamppb.New(record.UpdateAt),
+		UpdatedAt: timestamppb.New(record.UpdatedAt),
 	}
 }

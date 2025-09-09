@@ -65,7 +65,7 @@ func (s *dictionaryService) CreateDictionary(req *CreateDictionaryRequest) (*mod
 		ExampleSentence: req.ExampleSentence,
 		Model: model.Model{
 			CreatedAt: time.Now(),
-			UpdateAt:  time.Now(),
+			UpdatedAt: time.Now(),
 		},
 	}
 

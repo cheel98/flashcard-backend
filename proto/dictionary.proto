@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package dictionary;
 
-option go_package = "github.com/cheel98/flashcard-backend/proto/dictionary";
+option go_package = "proto/generated/dictionary";
 
 import "google/protobuf/timestamp.proto";
 

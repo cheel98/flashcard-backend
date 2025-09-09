@@ -36,7 +36,7 @@ func NewHandler(
 // RegisterServices 注册gRPC服务
 func (h *Handler) RegisterServices(server *grpcServer.Server) {
 	// 创建gRPC服务实例
-	userGRPCServer := grpc.NewUserGRPCServer(h.userService)
+	userGRPCServer := grpc.NewUserGRPCServer(h.userService, h.logger)
 	dictionaryGRPCServer := grpc.NewDictionaryGRPCServer(h.dictionaryService, h.logger)
 	favoriteGRPCServer := grpc.NewFavoriteGRPCServer(h.favoriteService, h.logger)
 

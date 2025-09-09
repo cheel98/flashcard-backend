@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package user;
 
-option go_package = "github.com/cheel98/flashcard-backend/proto/user";
+option go_package = "proto/generated/user";
 
 import "google/protobuf/timestamp.proto";
 
