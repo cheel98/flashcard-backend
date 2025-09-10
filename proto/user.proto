@@ -33,10 +33,11 @@ message RegisterRequest {
   string name = 1;
   string email = 2;
   string password_hash = 3;
+  string captcha = 4;
 }
 message CaptchaRequest {
   string email = 1;
-  string code = 2;
+  string captcha = 2;
 }
 
 // 发送验证码请求

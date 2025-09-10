@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"context"
-
+	"github.com/cheel98/flashcard-backend/internal/errors"
 	"github.com/cheel98/flashcard-backend/internal/model"
 	"github.com/cheel98/flashcard-backend/internal/repository"
 	"github.com/cheel98/flashcard-backend/pkg/email"
@@ -37,7 +37,13 @@ func NewUserGRPCServer(userRepo repository.UserRepository, jwtManager *jwt.JWTMa
 }
 func (s *UserGRPCServer) Register(ctx context.Context, req *user.RegisterRequest) (*user.RegisterResponse, error) {
 	s.logger.Info("Register", zap.String("email", req.Email), zap.String("name", req.Name))
-
+	_, err := s.VerifyCaptcha(ctx, &user.CaptchaRequest{
+		Email:   req.Email,
+		Captcha: req.Captcha,
+	})
+	if err != nil {
+		return nil, err
+	}
 	// 创建用户
 	user_, err := s.userRepo.Create(&model.User{
 		Name:         req.Name,
@@ -67,12 +73,12 @@ var SuccessBool = &user.BoolResponse{Success: true}
 func (s *UserGRPCServer) VerifyCaptcha(ctx context.Context, request *user.CaptchaRequest) (*user.BoolResponse, error) {
 	captcha, err := s.redisClient.GetCaptcha(ctx, request.Email)
 	if err != nil {
-		return FailedBool, nil
+		return FailedBool, errorsvar.CaptchaErrors
 	}
-	if captcha == request.GetCode() {
+	if captcha == request.GetCaptcha() {
 		return SuccessBool, nil
 	}
-	return FailedBool, nil
+	return FailedBool, errorsvar.CaptchaErrors
 }
 
 func (s *UserGRPCServer) SendEmailCaptcha(ctx context.Context, request *user.SendCaptchaRequest) (*user.BoolResponse, error) {
