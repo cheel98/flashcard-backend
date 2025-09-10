@@ -107,6 +107,9 @@ func (a *AuthMiddleware) authorize(ctx context.Context) (*jwt.Claims, error) {
 // isPublicMethod 检查是否为公开方法（不需要认证）
 func (a *AuthMiddleware) isPublicMethod(method string) bool {
 	publicMethods := []string{
+		"/user.UserService/Register",
+		"/user.UserService/SendEmailCaptcha",
+		"/user.UserService/VerifyCaptcha",
 		"/user.UserService/Login",
 		"/user.UserService/RefreshToken",
 	}
