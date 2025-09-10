@@ -8,6 +8,7 @@ import (
 
 // UserRepository 用户仓储接口
 type UserRepository interface {
+	Create(*model.User) (*model.User, error)
 	// Login 用户登录验证
 	Login(email, passwordHash string) (*model.User, error)
 	// GetUserByID 根据ID获取用户基本信息
@@ -36,6 +37,13 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{
 		db: db,
 	}
+}
+func (r *userRepository) Create(user *model.User) (*model.User, error) {
+	err := r.db.Create(user).Error
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 // Login 用户登录验证

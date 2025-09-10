@@ -2,9 +2,10 @@ package grpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/cheel98/flashcard-backend/internal/model"
-	"github.com/cheel98/flashcard-backend/internal/service"
+	"github.com/cheel98/flashcard-backend/internal/repository"
 	"github.com/cheel98/flashcard-backend/proto/generated/dictionary"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -15,27 +16,33 @@ import (
 // DictionaryGRPCServer gRPC词典服务实现
 type DictionaryGRPCServer struct {
 	dictionary.UnimplementedDictionaryServiceServer
-	dictionaryService service.DictionaryService
-	logger            *zap.Logger
+	dictionaryRepo repository.DictionaryRepository
+	logger         *zap.Logger
 }
 
 // NewDictionaryGRPCServer 创建新的gRPC词典服务
-func NewDictionaryGRPCServer(dictionaryService service.DictionaryService, logger *zap.Logger) *DictionaryGRPCServer {
+func NewDictionaryGRPCServer(dictionaryRepo repository.DictionaryRepository, logger *zap.Logger) *DictionaryGRPCServer {
 	return &DictionaryGRPCServer{
-		dictionaryService: dictionaryService,
-		logger:            logger,
+		dictionaryRepo: dictionaryRepo,
+		logger:         logger,
 	}
 }
 
 // CreateDictionary 创建词典记录
 func (s *DictionaryGRPCServer) CreateDictionary(ctx context.Context, req *dictionary.CreateDictionaryRequest) (*dictionary.CreateDictionaryResponse, error) {
-	s.logger.Info("gRPC CreateDictionary called",
-		zap.String("source_lang", req.SourceLang),
-		zap.String("target_lang", req.TargetLang),
-		zap.String("source_text", req.SourceText))
+	s.logger.Info("创建词典记录",
+		zap.String("sourceLang", req.SourceLang),
+		zap.String("targetLang", req.TargetLang),
+		zap.String("sourceText", req.SourceText))
 
-	// 转换请求为服务层请求
-	serviceReq := &service.CreateDictionaryRequest{
+	// 验证必填字段
+	if req.SourceLang == "" || req.TargetLang == "" || req.SourceText == "" || req.TranslatedText == "" {
+		s.logger.Error("创建词典记录失败：必填字段为空")
+		return nil, status.Errorf(codes.InvalidArgument, "源语言、目标语言、源文本和翻译文本不能为空")
+	}
+
+	// 创建词典记录
+	dict := &model.Dictionary{
 		SourceLang:      req.SourceLang,
 		TargetLang:      req.TargetLang,
 		SourceText:      req.SourceText,
@@ -43,12 +50,19 @@ func (s *DictionaryGRPCServer) CreateDictionary(ctx context.Context, req *dictio
 		PartOfSpeech:    req.PartOfSpeech,
 		IPA:             req.Ipa,
 		ExampleSentence: req.ExampleSentence,
+		Model: model.Model{
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
 	}
 
-	// 调用服务层
-	dict, err := s.dictionaryService.CreateDictionary(serviceReq)
+	err := s.dictionaryRepo.CreateDictionary(dict)
 	if err != nil {
-		s.logger.Error("Failed to create dictionary", zap.Error(err))
+		s.logger.Error("创建词典记录失败",
+			zap.String("sourceLang", req.SourceLang),
+			zap.String("targetLang", req.TargetLang),
+			zap.String("sourceText", req.SourceText),
+			zap.Error(err))
 		return nil, status.Errorf(codes.InvalidArgument, "创建词典记录失败: %v", err)
 	}
 
@@ -57,21 +71,30 @@ func (s *DictionaryGRPCServer) CreateDictionary(ctx context.Context, req *dictio
 		Dictionary: s.convertModelToProto(dict),
 	}
 
-	s.logger.Info("Dictionary created successfully", zap.Uint64("id", dict.ID))
+	s.logger.Info("词典记录创建成功", zap.Uint64("dictionaryID", dict.ID))
 	return response, nil
 }
 
 // GetDictionaryByUniqueTranslation 根据唯一翻译信息查询词典
 func (s *DictionaryGRPCServer) GetDictionaryByUniqueTranslation(ctx context.Context, req *dictionary.GetDictionaryByUniqueTranslationRequest) (*dictionary.GetDictionaryByUniqueTranslationResponse, error) {
-	s.logger.Info("gRPC GetDictionaryByUniqueTranslation called",
-		zap.String("source_lang", req.SourceLang),
-		zap.String("target_lang", req.TargetLang),
-		zap.String("source_text", req.SourceText))
+	s.logger.Debug("根据唯一翻译信息查询词典",
+		zap.String("sourceLang", req.SourceLang),
+		zap.String("targetLang", req.TargetLang),
+		zap.String("sourceText", req.SourceText))
 
-	// 调用服务层
-	dict, err := s.dictionaryService.GetDictionaryByUniqueTranslation(req.SourceLang, req.TargetLang, req.SourceText)
+	if req.SourceLang == "" || req.TargetLang == "" || req.SourceText == "" {
+		s.logger.Error("查询词典失败：参数不能为空")
+		return nil, status.Errorf(codes.InvalidArgument, "源语言、目标语言和源文本参数不能为空")
+	}
+
+	// 调用repository层
+	dict, err := s.dictionaryRepo.GetDictionaryByUniqueTranslation(req.SourceLang, req.TargetLang, req.SourceText)
 	if err != nil {
-		s.logger.Error("Failed to get dictionary by unique translation", zap.Error(err))
+		s.logger.Error("查询词典记录失败",
+			zap.String("sourceLang", req.SourceLang),
+			zap.String("targetLang", req.TargetLang),
+			zap.String("sourceText", req.SourceText),
+			zap.Error(err))
 		return nil, status.Errorf(codes.NotFound, "查询词典记录失败: %v", err)
 	}
 
@@ -85,12 +108,14 @@ func (s *DictionaryGRPCServer) GetDictionaryByUniqueTranslation(ctx context.Cont
 
 // GetDictionaryWithDetails 获取词典详细信息
 func (s *DictionaryGRPCServer) GetDictionaryWithDetails(ctx context.Context, req *dictionary.GetDictionaryWithDetailsRequest) (*dictionary.GetDictionaryWithDetailsResponse, error) {
-	s.logger.Info("gRPC GetDictionaryWithDetails called", zap.Uint64("dictionary_id", req.DictionaryId))
+	s.logger.Debug("获取词典详细信息", zap.Uint64("dictionaryID", req.DictionaryId))
 
-	// 调用服务层
-	dict, err := s.dictionaryService.GetDictionaryWithDetails(req.DictionaryId)
+	// 调用repository层
+	dict, err := s.dictionaryRepo.GetDictionaryWithDetails(req.DictionaryId)
 	if err != nil {
-		s.logger.Error("Failed to get dictionary with details", zap.Error(err))
+		s.logger.Error("获取词典详细信息失败",
+			zap.Uint64("dictionaryID", req.DictionaryId),
+			zap.Error(err))
 		return nil, status.Errorf(codes.NotFound, "获取词典详细信息失败: %v", err)
 	}
 

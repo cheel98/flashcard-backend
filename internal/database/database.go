@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"github.com/cheel98/flashcard-backend/internal/config"
+	"github.com/cheel98/flashcard-backend/internal/model"
 
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
@@ -37,8 +38,16 @@ func NewDatabase(cfg *config.Config, logger *zap.Logger) (*gorm.DB, error) {
 
 	// 自动迁移数据库表
 	if err := db.AutoMigrate(
-	//&model.Deck{},
-	// 配置orm对象自动迁移数据库
+		&model.User{},
+		&model.UserSettings{},
+		&model.UserPreferences{},
+		&model.UserLogs{},
+		&model.PaymentRecord{},
+		&model.Favorite{},
+		&model.StudyRecord{},
+		&model.Dictionary{},
+		&model.DictionaryAudio{},
+		&model.DictionaryMetadata{},
 	); err != nil {
 		logger.Error("Failed to migrate database", zap.Error(err))
 		return nil, err

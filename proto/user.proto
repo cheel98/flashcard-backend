@@ -10,6 +10,8 @@ import "google/protobuf/timestamp.proto";
 service UserService {
   // 用户注册
   rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc VerifyCaptcha(CaptchaRequest) returns (BoolResponse);
+  rpc SendEmailCaptcha(SendCaptchaRequest) returns (BoolResponse);
   // 用户登录
   rpc Login(LoginRequest) returns (LoginResponse);
   // 刷新访问令牌
@@ -31,15 +33,30 @@ message RegisterRequest {
   string name = 1;
   string email = 2;
   string password_hash = 3;
-  string phone = 4;
-  string nickname = 5;
+}
+message CaptchaRequest {
+  string email = 1;
+  string code = 2;
+}
+
+// 发送验证码请求
+message SendCaptchaRequest {
+  string email = 1;
+}
+
+// 空请求
+message EmptyRequest {
+}
+
+// 布尔响应
+message BoolResponse {
+  bool success = 1;
+  string message = 2;
 }
 
 // 注册响应
 message RegisterResponse {
   string user_id = 1;
-  string access_token = 2;
-  string refresh_token = 3;
 }
 
 // 登录请求

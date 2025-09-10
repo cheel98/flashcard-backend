@@ -13,6 +13,8 @@ type Config struct {
 	Database DatabaseConfig `json:"database"`
 	Logger   LoggerConfig   `json:"logger"`
 	JWT      JWTConfig      `json:"jwt"`
+	Redis    RedisConfig    `json:"redis"`
+	Email    EmailConfig    `json:"email"`
 }
 
 // ServerConfig 服务器配置
@@ -46,6 +48,24 @@ type JWTConfig struct {
 	RefreshTokenDuration int    `json:"refresh_token_duration"` // 小时
 }
 
+// RedisConfig Redis配置
+type RedisConfig struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Password string `json:"password"`
+	DB       int    `json:"db"`
+}
+
+// EmailConfig 邮件配置
+type EmailConfig struct {
+	SMTPHost     string `json:"smtp_host"`
+	SMTPPort     int    `json:"smtp_port"`
+	SMTPUsername string `json:"smtp_username"`
+	SMTPPassword string `json:"smtp_password"`
+	FromEmail    string `json:"from_email"`
+	FromName     string `json:"from_name"`
+}
+
 // LoadConfig 加载配置
 func LoadConfig() (*Config, error) {
 	// 加载.env文件（如果存在）
@@ -72,8 +92,22 @@ func LoadConfig() (*Config, error) {
 		},
 		JWT: JWTConfig{
 			SecretKey:            getEnv("JWT_SECRET_KEY", "your-secret-key-change-in-production"),
-			AccessTokenDuration:  getEnvAsInt("JWT_ACCESS_TOKEN_DURATION", 15),  // 15分钟
+			AccessTokenDuration:  getEnvAsInt("JWT_ACCESS_TOKEN_DURATION", 15),   // 15分钟
 			RefreshTokenDuration: getEnvAsInt("JWT_REFRESH_TOKEN_DURATION", 168), // 7天
+		},
+		Redis: RedisConfig{
+			Host:     getEnv("REDIS_HOST", "localhost"),
+			Port:     getEnvAsInt("REDIS_PORT", 6379),
+			Password: getEnv("REDIS_PASSWORD", ""),
+			DB:       getEnvAsInt("REDIS_DB", 0),
+		},
+		Email: EmailConfig{
+			SMTPHost:     getEnv("SMTP_HOST", "smtp.gmail.com"),
+			SMTPPort:     getEnvAsInt("SMTP_PORT", 587),
+			SMTPUsername: getEnv("SMTP_USERNAME", ""),
+			SMTPPassword: getEnv("SMTP_PASSWORD", ""),
+			FromEmail:    getEnv("FROM_EMAIL", ""),
+			FromName:     getEnv("FROM_NAME", "Flashcard App"),
 		},
 	}
 

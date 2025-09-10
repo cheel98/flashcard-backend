@@ -2,10 +2,12 @@ package grpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/cheel98/flashcard-backend/internal/model"
-	"github.com/cheel98/flashcard-backend/internal/service"
+	"github.com/cheel98/flashcard-backend/internal/repository"
 	"github.com/cheel98/flashcard-backend/proto/generated/favorite"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,35 +17,48 @@ import (
 // FavoriteGRPCServer gRPC收藏服务实现
 type FavoriteGRPCServer struct {
 	favorite.UnimplementedFavoriteServiceServer
-	favoriteService service.FavoriteService
-	logger          *zap.Logger
+	favoriteRepo repository.FavoriteRepository
+	logger       *zap.Logger
 }
 
 // NewFavoriteGRPCServer 创建新的gRPC收藏服务
-func NewFavoriteGRPCServer(favoriteService service.FavoriteService, logger *zap.Logger) *FavoriteGRPCServer {
+func NewFavoriteGRPCServer(favoriteRepo repository.FavoriteRepository, logger *zap.Logger) *FavoriteGRPCServer {
 	return &FavoriteGRPCServer{
-		favoriteService: favoriteService,
-		logger:          logger,
+		favoriteRepo: favoriteRepo,
+		logger:       logger,
 	}
 }
 
 // AddFavorite 添加收藏
 func (s *FavoriteGRPCServer) AddFavorite(ctx context.Context, req *favorite.AddFavoriteRequest) (*favorite.AddFavoriteResponse, error) {
-	s.logger.Info("gRPC AddFavorite called",
-		zap.String("user_id", req.UserId),
-		zap.Uint64("dictionary_id", req.DictionaryId))
+	s.logger.Info("添加收藏",
+		zap.String("userID", req.UserId),
+		zap.Uint64("dictionaryID", req.DictionaryId))
 
-	// 转换请求为服务层请求
-	serviceReq := &service.AddFavoriteRequest{
+	// 验证必填字段
+	if req.UserId == "" || req.DictionaryId == 0 {
+		s.logger.Error("添加收藏失败：必填字段为空")
+		return nil, status.Errorf(codes.InvalidArgument, "用户ID和词典ID不能为空")
+	}
+
+	// 创建收藏记录
+	fav := &model.Favorite{
+		ID:           uuid.New().String(),
 		UserID:       req.UserId,
 		DictionaryID: req.DictionaryId,
 		MemoryDepth:  req.MemoryDepth,
+		Model: model.Model{
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
 	}
 
-	// 调用服务层
-	fav, err := s.favoriteService.AddFavorite(serviceReq)
+	err := s.favoriteRepo.AddFavorite(fav)
 	if err != nil {
-		s.logger.Error("Failed to add favorite", zap.Error(err))
+		s.logger.Error("添加收藏失败",
+			zap.String("userID", req.UserId),
+			zap.Uint64("dictionaryID", req.DictionaryId),
+			zap.Error(err))
 		return nil, status.Errorf(codes.InvalidArgument, "添加收藏失败: %v", err)
 	}
 
@@ -52,21 +67,28 @@ func (s *FavoriteGRPCServer) AddFavorite(ctx context.Context, req *favorite.AddF
 		Favorite: s.convertModelToProto(fav),
 	}
 
-	s.logger.Info("Favorite added successfully", zap.String("favorite_id", fav.ID))
+	s.logger.Info("收藏添加成功", zap.String("favoriteID", fav.ID))
 	return response, nil
 }
 
 // GetFavoritesByMemoryAsc 按memory升序查询收藏
 func (s *FavoriteGRPCServer) GetFavoritesByMemoryAsc(ctx context.Context, req *favorite.GetFavoritesByMemoryAscRequest) (*favorite.GetFavoritesByMemoryAscResponse, error) {
-	s.logger.Info("gRPC GetFavoritesByMemoryAsc called",
-		zap.String("user_id", req.UserId),
+	s.logger.Debug("按memory升序查询收藏",
+		zap.String("userID", req.UserId),
 		zap.Int32("limit", req.Limit),
 		zap.Int32("offset", req.Offset))
 
-	// 调用服务层
-	favorites, err := s.favoriteService.GetFavoritesByMemoryAsc(req.UserId, int(req.Limit), int(req.Offset))
+	if req.UserId == "" {
+		s.logger.Error("查询收藏失败：用户ID不能为空")
+		return nil, status.Errorf(codes.InvalidArgument, "用户ID不能为空")
+	}
+
+	// 调用repository层
+	favorites, err := s.favoriteRepo.GetFavoritesByMemoryAsc(req.UserId, int(req.Limit), int(req.Offset))
 	if err != nil {
-		s.logger.Error("Failed to get favorites by memory asc", zap.Error(err))
+		s.logger.Error("按memory升序查询收藏失败",
+			zap.String("userID", req.UserId),
+			zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "查询收藏失败: %v", err)
 	}
 
@@ -85,21 +107,35 @@ func (s *FavoriteGRPCServer) GetFavoritesByMemoryAsc(ctx context.Context, req *f
 
 // GetFavoritesByStudyRecord 按学习记录查询收藏
 func (s *FavoriteGRPCServer) GetFavoritesByStudyRecord(ctx context.Context, req *favorite.GetFavoritesByStudyRecordRequest) (*favorite.GetFavoritesByStudyRecordResponse, error) {
-	s.logger.Info("gRPC GetFavoritesByStudyRecord called",
-		zap.String("user_id", req.UserId),
+	s.logger.Debug("按收藏日志查询收藏",
+		zap.String("userID", req.UserId),
 		zap.String("result", req.Result),
 		zap.Int32("limit", req.Limit),
 		zap.Int32("offset", req.Offset))
 
+	if req.UserId == "" {
+		s.logger.Error("查询收藏失败：用户ID不能为空")
+		return nil, status.Errorf(codes.InvalidArgument, "用户ID不能为空")
+	}
+
+	if req.Result == "" {
+		s.logger.Error("查询收藏失败：学习结果参数不能为空")
+		return nil, status.Errorf(codes.InvalidArgument, "学习结果参数不能为空")
+	}
+
 	// 验证result参数
 	if req.Result != "remembered" && req.Result != "fuzzy" && req.Result != "strange" {
+		s.logger.Error("查询收藏失败：学习结果参数无效", zap.String("result", req.Result))
 		return nil, status.Errorf(codes.InvalidArgument, "学习结果参数无效: %s", req.Result)
 	}
 
-	// 调用服务层
-	favorites, err := s.favoriteService.GetFavoritesByStudyRecord(req.UserId, req.Result, int(req.Limit), int(req.Offset))
+	// 调用repository层
+	favorites, err := s.favoriteRepo.GetFavoritesByStudyRecord(req.UserId, req.Result, int(req.Limit), int(req.Offset))
 	if err != nil {
-		s.logger.Error("Failed to get favorites by study record", zap.Error(err))
+		s.logger.Error("按收藏日志查询收藏失败",
+			zap.String("userID", req.UserId),
+			zap.String("result", req.Result),
+			zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "查询收藏失败: %v", err)
 	}
 
@@ -118,16 +154,24 @@ func (s *FavoriteGRPCServer) GetFavoritesByStudyRecord(ctx context.Context, req 
 
 // GetFavoritesByMemoryDepth 按记忆深度查询收藏
 func (s *FavoriteGRPCServer) GetFavoritesByMemoryDepth(ctx context.Context, req *favorite.GetFavoritesByMemoryDepthRequest) (*favorite.GetFavoritesByMemoryDepthResponse, error) {
-	s.logger.Info("gRPC GetFavoritesByMemoryDepth called",
-		zap.String("user_id", req.UserId),
-		zap.Uint64("memory_depth", req.MemoryDepth),
+	s.logger.Debug("按记忆深度查询收藏",
+		zap.String("userID", req.UserId),
+		zap.Uint64("memoryDepth", req.MemoryDepth),
 		zap.Int32("limit", req.Limit),
 		zap.Int32("offset", req.Offset))
 
-	// 调用服务层
-	favorites, err := s.favoriteService.GetFavoritesByMemoryDepth(req.UserId, req.MemoryDepth, int(req.Limit), int(req.Offset))
+	if req.UserId == "" {
+		s.logger.Error("查询收藏失败：用户ID不能为空")
+		return nil, status.Errorf(codes.InvalidArgument, "用户ID不能为空")
+	}
+
+	// 调用repository层
+	favorites, err := s.favoriteRepo.GetFavoritesByMemoryDepth(req.UserId, req.MemoryDepth, int(req.Limit), int(req.Offset))
 	if err != nil {
-		s.logger.Error("Failed to get favorites by memory depth", zap.Error(err))
+		s.logger.Error("按记忆深度查询收藏失败",
+			zap.String("userID", req.UserId),
+			zap.Uint64("memoryDepth", req.MemoryDepth),
+			zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "查询收藏失败: %v", err)
 	}
 
@@ -146,20 +190,30 @@ func (s *FavoriteGRPCServer) GetFavoritesByMemoryDepth(ctx context.Context, req 
 
 // AddStudyRecord 添加学习记录
 func (s *FavoriteGRPCServer) AddStudyRecord(ctx context.Context, req *favorite.AddStudyRecordRequest) (*favorite.AddStudyRecordResponse, error) {
-	s.logger.Info("gRPC AddStudyRecord called",
-		zap.String("result", req.Result),
-		zap.String("remark", req.Remark))
+	s.logger.Info("添加学习记录", zap.String("result", req.Result))
 
-	// 转换请求为服务层请求
-	serviceReq := &service.AddStudyRecordRequest{
-		Result: req.Result,
-		Remark: req.Remark,
+	// 验证result参数
+	if req.Result != "remembered" && req.Result != "fuzzy" && req.Result != "strange" {
+		s.logger.Error("添加学习记录失败：学习结果参数无效", zap.String("result", req.Result))
+		return nil, status.Errorf(codes.InvalidArgument, "学习结果参数无效")
 	}
 
-	// 调用服务层
-	studyRecord, err := s.favoriteService.AddStudyRecord(serviceReq)
+	// 创建学习记录
+	studyRecord := &model.StudyRecord{
+		ID:     uuid.New().String(),
+		Result: req.Result,
+		Remark: req.Remark,
+		Model: model.Model{
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+	}
+
+	err := s.favoriteRepo.AddStudyRecord(studyRecord)
 	if err != nil {
-		s.logger.Error("Failed to add study record", zap.Error(err))
+		s.logger.Error("添加学习记录失败",
+			zap.String("result", req.Result),
+			zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "添加学习记录失败: %v", err)
 	}
 
@@ -168,7 +222,7 @@ func (s *FavoriteGRPCServer) AddStudyRecord(ctx context.Context, req *favorite.A
 		StudyRecord: s.convertStudyRecordToProto(studyRecord),
 	}
 
-	s.logger.Info("Study record added successfully", zap.String("record_id", studyRecord.ID))
+	s.logger.Info("学习记录添加成功", zap.String("studyRecordID", studyRecord.ID))
 	return response, nil
 }
 
