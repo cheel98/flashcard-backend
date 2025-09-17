@@ -104,17 +104,17 @@ func (manager *JWTManager) VerifyToken(tokenString string) (*Claims, error) {
 }
 
 // RefreshAccessToken 使用刷新令牌生成新的访问令牌
-func (manager *JWTManager) RefreshAccessToken(refreshTokenString string) (string, error) {
+func (manager *JWTManager) RefreshAccessToken(refreshTokenString string) (*TokenPair, error) {
 	claims, err := manager.VerifyToken(refreshTokenString)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if claims.TokenType != RefreshToken {
-		return "", errors.New("invalid token type")
+		return nil, errors.New("invalid token type")
 	}
 
-	return manager.GenerateAccessToken(claims.UserID, claims.Email)
+	return manager.GenerateTokenPair(claims.UserID, claims.Email)
 }
 
 // TokenPair 令牌对

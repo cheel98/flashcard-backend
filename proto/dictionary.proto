@@ -12,9 +12,9 @@ service DictionaryService {
   rpc CreateDictionary(CreateDictionaryRequest) returns (CreateDictionaryResponse);
   // 根据唯一翻译信息查询词典
   rpc GetDictionaryByUniqueTranslation(GetDictionaryByUniqueTranslationRequest) returns (GetDictionaryByUniqueTranslationResponse);
-  // 获取词典详细信息
-  rpc GetDictionaryWithDetails(GetDictionaryWithDetailsRequest) returns (GetDictionaryWithDetailsResponse);
 }
+
+
 
 // 创建词典请求
 message CreateDictionaryRequest {
@@ -41,16 +41,6 @@ message GetDictionaryByUniqueTranslationRequest {
 
 // 根据唯一翻译查询响应
 message GetDictionaryByUniqueTranslationResponse {
-  Dictionary dictionary = 1;
-}
-
-// 获取词典详情请求
-message GetDictionaryWithDetailsRequest {
-  uint64 dictionary_id = 1;
-}
-
-// 获取词典详情响应
-message GetDictionaryWithDetailsResponse {
   Dictionary dictionary = 1;
 }
 

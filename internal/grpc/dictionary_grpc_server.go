@@ -106,27 +106,6 @@ func (s *DictionaryGRPCServer) GetDictionaryByUniqueTranslation(ctx context.Cont
 	return response, nil
 }
 
-// GetDictionaryWithDetails 获取词典详细信息
-func (s *DictionaryGRPCServer) GetDictionaryWithDetails(ctx context.Context, req *dictionary.GetDictionaryWithDetailsRequest) (*dictionary.GetDictionaryWithDetailsResponse, error) {
-	s.logger.Debug("获取词典详细信息", zap.Uint64("dictionaryID", req.DictionaryId))
-
-	// 调用repository层
-	dict, err := s.dictionaryRepo.GetDictionaryWithDetails(req.DictionaryId)
-	if err != nil {
-		s.logger.Error("获取词典详细信息失败",
-			zap.Uint64("dictionaryID", req.DictionaryId),
-			zap.Error(err))
-		return nil, status.Errorf(codes.NotFound, "获取词典详细信息失败: %v", err)
-	}
-
-	// 转换响应
-	response := &dictionary.GetDictionaryWithDetailsResponse{
-		Dictionary: s.convertModelToProto(dict),
-	}
-
-	return response, nil
-}
-
 // convertModelToProto 将模型转换为protobuf消息
 func (s *DictionaryGRPCServer) convertModelToProto(dict *model.Dictionary) *dictionary.Dictionary {
 	protoDict := &dictionary.Dictionary{

@@ -18,7 +18,7 @@ var Module = fx.Options(
 func NewJWTManagerFromConfig(config *config.Config) *JWTManager {
 	return NewJWTManager(
 		config.JWT.SecretKey,
-		time.Duration(config.JWT.AccessTokenDuration),
-		time.Duration(config.JWT.RefreshTokenDuration),
+		time.Duration(config.JWT.AccessTokenDuration)*time.Minute,
+		time.Duration(config.JWT.RefreshTokenDuration)*time.Hour,
 	)
 }

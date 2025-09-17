@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package translation;
+
+option go_package = "proto/generated/translation";
+
+service Translation {
+  //
+  rpc Translation(TranslationRequest) returns (TranslationResponse);
+}
+
+message TranslationRequest {
+  string q = 1;
+  string from = 2;
+  string to = 3;
+}
+
+message TranslationResponse {
+  string errorCode = 1;
+  string query = 2;
+  repeated string translation = 3;
+  string l = 4;
+  DictResponse dict = 5;
+  string tSpeakUrl =6;
+  string speakUrl = 7;
+}
+
+message DictResponse {
+  string url = 1;
+}

@@ -12,6 +12,9 @@ service UserService {
   rpc Register(RegisterRequest) returns (RegisterResponse);
   rpc VerifyCaptcha(CaptchaRequest) returns (BoolResponse);
   rpc SendEmailCaptcha(SendCaptchaRequest) returns (BoolResponse);
+  // 修改用户信息
+  rpc EditSetting(EditSettingRequest) returns (BoolResponse);
+  rpc EditPreference(EditPreferenceRequest) returns (BoolResponse);
   // 用户登录
   rpc Login(LoginRequest) returns (LoginResponse);
   // 刷新访问令牌
@@ -19,13 +22,20 @@ service UserService {
   // 用户登出
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   // 获取用户信息
-  rpc GetUserByID(GetUserByIDRequest) returns (GetUserByIDResponse);
+  rpc GetUserByEmail(GetUserByEmailRequest) returns (GetUserByEmailResponse);
   // 获取用户设置
   rpc GetUserSettings(GetUserSettingsRequest) returns (GetUserSettingsResponse);
   // 获取用户偏好
   rpc GetUserPreferences(GetUserPreferencesRequest) returns (GetUserPreferencesResponse);
   // 获取用户日志
   rpc GetUserLogs(GetUserLogsRequest) returns (GetUserLogsResponse);
+}
+
+message EditSettingRequest {
+  UserSettings user_setting = 1;
+}
+message EditPreferenceRequest {
+  UserPreferences user_preference = 1;
 }
 
 // 注册请求
@@ -73,12 +83,12 @@ message LoginResponse {
 }
 
 // 获取用户信息请求
-message GetUserByIDRequest {
-  string user_id = 1;
+message GetUserByEmailRequest {
+  string email = 1;
 }
 
 // 获取用户信息响应
-message GetUserByIDResponse {
+message GetUserByEmailResponse {
   User user = 1;
 }
 
@@ -104,12 +114,14 @@ message GetUserPreferencesResponse {
 
 // 刷新令牌请求
 message RefreshTokenRequest {
-  string refresh_token = 1;
+  string user_id = 1;
+  string refresh_token = 2;
 }
 
 // 刷新令牌响应
 message RefreshTokenResponse {
   string access_token = 1;
+  string refresh_token = 2;
 }
 
 // 登出请求

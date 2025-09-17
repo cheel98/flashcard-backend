@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/cheel98/flashcard-backend/internal/config"
 	"github.com/cheel98/flashcard-backend/internal/database"
+	"github.com/cheel98/flashcard-backend/internal/grpc"
 	"github.com/cheel98/flashcard-backend/internal/handler"
 	"github.com/cheel98/flashcard-backend/internal/middleware"
 	"github.com/cheel98/flashcard-backend/internal/repository"
@@ -24,5 +25,6 @@ var Module = fx.Options(
 	handler.Module,
 	pkg.Module,
 	// 服务器模块
+	grpc.Module,
 	fx.Provide(NewServer),
 )

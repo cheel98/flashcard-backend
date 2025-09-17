@@ -9,12 +9,13 @@ import (
 
 // Config 应用配置结构体
 type Config struct {
-	Server   ServerConfig   `json:"server"`
-	Database DatabaseConfig `json:"database"`
-	Logger   LoggerConfig   `json:"logger"`
-	JWT      JWTConfig      `json:"jwt"`
-	Redis    RedisConfig    `json:"redis"`
-	Email    EmailConfig    `json:"email"`
+	Server         ServerConfig   `json:"server"`
+	Database       DatabaseConfig `json:"database"`
+	Logger         LoggerConfig   `json:"logger"`
+	JWT            JWTConfig      `json:"jwt"`
+	Redis          RedisConfig    `json:"redis"`
+	Email          EmailConfig    `json:"email"`
+	TransferConfig TransferConfig `json:"transfer_config"`
 }
 
 // ServerConfig 服务器配置
@@ -65,6 +66,19 @@ type EmailConfig struct {
 	FromEmail    string `json:"from_email"`
 	FromName     string `json:"from_name"`
 }
+type Engine string
+
+const (
+	YOUDAO Engine = "Youdao"
+)
+
+// 翻译引擎设置
+type TransferConfig struct {
+	URL       string `json:"url"`
+	Engine    Engine `json:"engine"`
+	AppKey    string `json:"app_key"`
+	AppSecret string `json:"app_secret"`
+}
 
 // LoadConfig 加载配置
 func LoadConfig() (*Config, error) {
@@ -108,6 +122,12 @@ func LoadConfig() (*Config, error) {
 			SMTPPassword: getEnv("SMTP_PASSWORD", ""),
 			FromEmail:    getEnv("FROM_EMAIL", ""),
 			FromName:     getEnv("FROM_NAME", "Flashcard App"),
+		},
+		TransferConfig: TransferConfig{
+			URL:       getEnv("TRANSFER_URL", "https://openapi.youdao.com/api"),
+			Engine:    YOUDAO,
+			AppKey:    getEnv("APP_KEY", ""),
+			AppSecret: getEnv("APP_SECRET", ""),
 		},
 	}
 

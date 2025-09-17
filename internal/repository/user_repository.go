@@ -11,8 +11,8 @@ type UserRepository interface {
 	Create(*model.User) (*model.User, error)
 	// Login 用户登录验证
 	Login(email, passwordHash string) (*model.User, error)
-	// GetUserByID 根据ID获取用户基本信息
-	GetUserByID(userID string) (*model.User, error)
+	// GetUserByEmail 根据ID获取用户基本信息
+	GetUserByEmail(email string) (*model.User, error)
 	// GetUserSettings 获取用户设置
 	GetUserSettings(userID string) (*model.UserSettings, error)
 	// GetUserPreferences 获取用户个人喜好
@@ -22,7 +22,7 @@ type UserRepository interface {
 	// SaveRefreshToken 保存刷新令牌
 	SaveRefreshToken(userID, refreshToken string) error
 	// GetUserByRefreshToken 根据刷新令牌获取用户
-	GetUserByRefreshToken(refreshToken string) (*model.User, error)
+	GetUserByRefreshToken(userId, refreshToken string) (*model.User, error)
 	// ClearRefreshToken 清除刷新令牌
 	ClearRefreshToken(userID string) error
 }
@@ -60,9 +60,9 @@ func (r *userRepository) Login(email, passwordHash string) (*model.User, error) 
 }
 
 // GetUserByID 根据ID获取用户基本信息（不使用关联查询）
-func (r *userRepository) GetUserByID(userID string) (*model.User, error) {
+func (r *userRepository) GetUserByEmail(email string) (*model.User, error) {
 	var user model.User
-	err := r.db.Where("id = ?", userID).First(&user).Error
+	err := r.db.Where("email = ?", email).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("用户不存在")
@@ -122,13 +122,14 @@ func (r *userRepository) SaveRefreshToken(userID, refreshToken string) error {
 }
 
 // GetUserByRefreshToken 根据刷新令牌获取用户
-func (r *userRepository) GetUserByRefreshToken(refreshToken string) (*model.User, error) {
+func (r *userRepository) GetUserByRefreshToken(userId, refreshToken string) (*model.User, error) {
 	var user model.User
-	err := r.db.Where("refresh_token = ? AND refresh_token != ''", refreshToken).First(&user).Error
+	err := r.db.Where("user_id = ? AND refresh_token = ? AND refresh_token != ''", userId, refreshToken).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("无效的刷新令牌")
 		}
+		_ = r.ClearRefreshToken(userId)
 		return nil, err
 	}
 	return &user, nil

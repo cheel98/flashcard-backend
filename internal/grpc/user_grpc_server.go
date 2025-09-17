@@ -137,22 +137,26 @@ func (s *UserGRPCServer) Login(ctx context.Context, req *user.LoginRequest) (*us
 func (s *UserGRPCServer) RefreshToken(ctx context.Context, req *user.RefreshTokenRequest) (*user.RefreshTokenResponse, error) {
 	s.logger.Debug("刷新访问令牌")
 	// 验证refresh token
-	user_, err := s.userRepo.GetUserByRefreshToken(req.RefreshToken)
+	user_, err := s.userRepo.GetUserByRefreshToken(req.UserId, req.RefreshToken)
 	if err != nil {
 		s.logger.Error("无效的refresh token", zap.Error(err))
 		return nil, err
 	}
 
 	// 生成新的access token
-	accessToken, err := s.jwtManager.RefreshAccessToken(req.RefreshToken)
+	tokenPair, err := s.jwtManager.RefreshAccessToken(req.RefreshToken)
 	if err != nil {
 		s.logger.Error("刷新access token失败", zap.String("userID", user_.ID), zap.Error(err))
 		return nil, err
 	}
-
+	err = s.userRepo.SaveRefreshToken(user_.ID, tokenPair.RefreshToken)
+	if err != nil {
+		s.logger.Error("刷新access token失败", zap.String("userID", user_.ID), zap.Error(err))
+	}
 	s.logger.Info("access token刷新成功", zap.String("userID", user_.ID))
 	return &user.RefreshTokenResponse{
-		AccessToken: accessToken,
+		AccessToken:  tokenPair.AccessToken,
+		RefreshToken: tokenPair.RefreshToken,
 	}, nil
 }
 
@@ -173,17 +177,17 @@ func (s *UserGRPCServer) Logout(ctx context.Context, req *user.LogoutRequest) (*
 	}, nil
 }
 
-// GetUserByID 获取用户信息
-func (s *UserGRPCServer) GetUserByID(ctx context.Context, req *user.GetUserByIDRequest) (*user.GetUserByIDResponse, error) {
-	s.logger.Debug("获取用户信息", zap.String("userID", req.UserId))
+// GetUserByEmail 获取用户信息
+func (s *UserGRPCServer) GetUserByEmail(ctx context.Context, req *user.GetUserByEmailRequest) (*user.GetUserByEmailResponse, error) {
+	s.logger.Debug("获取用户信息", zap.String("email", req.Email))
 
-	userModel, err := s.userRepo.GetUserByID(req.UserId)
+	userModel, err := s.userRepo.GetUserByEmail(req.Email)
 	if err != nil {
-		s.logger.Error("获取用户信息失败", zap.String("userID", req.UserId), zap.Error(err))
+		s.logger.Error("获取用户信息失败", zap.String("email", req.Email), zap.Error(err))
 		return nil, status.Errorf(codes.NotFound, "获取用户信息失败: %v", err)
 	}
 
-	return &user.GetUserByIDResponse{
+	return &user.GetUserByEmailResponse{
 		User: s.convertUserModelToProto(userModel),
 	}, nil
 }

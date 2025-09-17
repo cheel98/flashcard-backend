@@ -1,6 +1,10 @@
 package model
 
-import "time"
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"time"
+)
 
 type User struct {
 	ID               string    `gorm:"column:id;primary_key;type:varchar(255)" json:"id"`
@@ -45,6 +49,18 @@ type UserLogs struct {
 func (User) TableName() string {
 	return "user"
 }
+
+func (u *User) BeforeCreate(tx *gorm.DB) error {
+	if u.ID == "" {
+		uid, err := uuid.NewV7()
+		if err != nil {
+			return nil
+		}
+		u.ID = uid.String()
+	}
+	return nil
+}
+
 func (UserSettings) TableName() string {
 	return "user_setting"
 }
