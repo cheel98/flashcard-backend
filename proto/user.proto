@@ -5,30 +5,171 @@ package user;
 option go_package = "proto/generated/user";
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Flashcard Backend User API";
+    version: "1.0";
+    description: "用户管理相关的API接口";
+  };
+  schemes: HTTP;
+  schemes: HTTPS;
+  consumes: "application/json";
+  produces: "application/json";
+};
 
 // User服务定义
 service UserService {
   // 用户注册
-  rpc Register(RegisterRequest) returns (RegisterResponse);
-  rpc VerifyCaptcha(CaptchaRequest) returns (BoolResponse);
-  rpc SendEmailCaptcha(SendCaptchaRequest) returns (BoolResponse);
+  rpc Register(RegisterRequest) returns (RegisterResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/user/register"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "用户注册";
+      description: "创建新用户账户";
+      tags: "用户管理";
+    };
+  }
+  
+  rpc VerifyCaptcha(CaptchaRequest) returns (BoolResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/user/verify-captcha"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "验证验证码";
+      description: "验证邮箱验证码";
+      tags: "用户管理";
+    };
+  }
+  
+  rpc SendEmailCaptcha(SendCaptchaRequest) returns (BoolResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/user/send-captcha"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "发送邮箱验证码";
+      description: "向指定邮箱发送验证码";
+      tags: "用户管理";
+    };
+  }
+  
   // 修改用户信息
-  rpc EditSetting(EditSettingRequest) returns (BoolResponse);
-  rpc EditPreference(EditPreferenceRequest) returns (BoolResponse);
+  rpc EditSetting(EditSettingRequest) returns (BoolResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/user/settings"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "修改用户设置";
+      description: "更新用户设置信息";
+      tags: "用户管理";
+    };
+  }
+  
+  rpc EditPreference(EditPreferenceRequest) returns (BoolResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/user/preferences"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "修改用户偏好";
+      description: "更新用户偏好设置";
+      tags: "用户管理";
+    };
+  }
+  
   // 用户登录
-  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/user/login"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "用户登录";
+      description: "用户登录获取访问令牌";
+      tags: "用户管理";
+    };
+  }
+  
   // 刷新访问令牌
-  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/user/refresh-token"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "刷新访问令牌";
+      description: "使用刷新令牌获取新的访问令牌";
+      tags: "用户管理";
+    };
+  }
+  
   // 用户登出
-  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/user/logout"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "用户登出";
+      description: "用户登出并清除令牌";
+      tags: "用户管理";
+    };
+  }
+  
   // 获取用户信息
-  rpc GetUserByEmail(GetUserByEmailRequest) returns (GetUserByEmailResponse);
+  rpc GetUserByEmail(GetUserByEmailRequest) returns (GetUserByEmailResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/user/email/{email}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "根据邮箱获取用户信息";
+      description: "通过邮箱地址查询用户详细信息";
+      tags: "用户管理";
+    };
+  }
+  
   // 获取用户设置
-  rpc GetUserSettings(GetUserSettingsRequest) returns (GetUserSettingsResponse);
+  rpc GetUserSettings(GetUserSettingsRequest) returns (GetUserSettingsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/user/{user_id}/settings"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "获取用户设置";
+      description: "获取指定用户的设置信息";
+      tags: "用户管理";
+    };
+  }
+  
   // 获取用户偏好
-  rpc GetUserPreferences(GetUserPreferencesRequest) returns (GetUserPreferencesResponse);
+  rpc GetUserPreferences(GetUserPreferencesRequest) returns (GetUserPreferencesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/user/{user_id}/preferences"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "获取用户偏好";
+      description: "获取指定用户的偏好设置";
+      tags: "用户管理";
+    };
+  }
+  
   // 获取用户日志
-  rpc GetUserLogs(GetUserLogsRequest) returns (GetUserLogsResponse);
+  rpc GetUserLogs(GetUserLogsRequest) returns (GetUserLogsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/user/{user_id}/logs"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "获取用户日志";
+      description: "获取指定用户的操作日志";
+      tags: "用户管理";
+    };
+  }
 }
 
 message EditSettingRequest {

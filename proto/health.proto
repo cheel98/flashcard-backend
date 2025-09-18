@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package health;
+
+option go_package = "proto/generated/health";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Flashcard Backend Health API";
+    version: "1.0";
+    description: "健康检查和监控相关的API接口";
+  };
+  schemes: HTTP;
+  schemes: HTTPS;
+  consumes: "application/json";
+  produces: "application/json";
+};
+
+// 健康检查服务定义
+service HealthService {
+  // 检查服务健康状态
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/health/check"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "健康检查";
+      description: "检查服务的健康状态";
+      tags: "健康监控";
+    };
+  }
+  
+  // 监听服务健康状态变化（流式）
+  rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/health/watch"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "监听健康状态";
+      description: "实时监听服务健康状态变化";
+      tags: "健康监控";
+    };
+  }
+  
+  // 心跳检查
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/health/heartbeat"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "心跳检查";
+      description: "发送心跳信号检查连接状态";
+      tags: "健康监控";
+    };
+  }
+}
+
+// 健康检查请求
+message HealthCheckRequest {
+  string service = 1; // 要检查的服务名称，空字符串表示检查整个服务器
+}
+
+// 健康检查响应
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+    SERVICE_UNKNOWN = 3; // 服务不存在
+  }
+  ServingStatus status = 1;
+  string message = 2; // 可选的状态描述信息
+  google.protobuf.Timestamp timestamp = 3; // 检查时间戳
+}
+
+// 心跳请求
+message HeartbeatRequest {
+  string client_id = 1; // 客户端标识
+  google.protobuf.Timestamp timestamp = 2; // 请求时间戳
+}
+
+// 心跳响应
+message HeartbeatResponse {
+  string server_id = 1; // 服务器标识
+  google.protobuf.Timestamp timestamp = 2; // 响应时间戳
+  bool alive = 3; // 服务器是否存活
+  ServerStats stats = 4; // 可选的服务器统计信息
+}
+
+// 服务器统计信息
+message ServerStats {
+  int64 uptime_seconds = 1; // 运行时间（秒）
+  int32 active_connections = 2; // 活跃连接数
+  double cpu_usage = 3; // CPU使用率（0-1）
+  double memory_usage = 4; // 内存使用率（0-1）
+  int64 total_requests = 5; // 总请求数
+  int64 failed_requests = 6; // 失败请求数
+}

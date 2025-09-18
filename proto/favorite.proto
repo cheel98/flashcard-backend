@@ -5,19 +5,84 @@ package favorite;
 option go_package = "proto/generated/favorite";
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Flashcard Backend Favorite API";
+    version: "1.0";
+    description: "收藏和学习记录管理相关的API接口";
+  };
+  schemes: HTTP;
+  schemes: HTTPS;
+  consumes: "application/json";
+  produces: "application/json";
+};
 
 // Favorite服务定义
 service FavoriteService {
   // 添加收藏
-  rpc AddFavorite(AddFavoriteRequest) returns (AddFavoriteResponse);
+  rpc AddFavorite(AddFavoriteRequest) returns (AddFavoriteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/favorite"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "添加收藏";
+      description: "将词典记录添加到用户收藏";
+      tags: "收藏管理";
+    };
+  }
+  
   // 按memory升序查询收藏
-  rpc GetFavoritesByMemoryAsc(GetFavoritesByMemoryAscRequest) returns (GetFavoritesByMemoryAscResponse);
+  rpc GetFavoritesByMemoryAsc(GetFavoritesByMemoryAscRequest) returns (GetFavoritesByMemoryAscResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/favorite/{user_id}/memory-asc"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "按记忆程度升序查询收藏";
+      description: "获取用户收藏列表，按记忆程度从低到高排序";
+      tags: "收藏管理";
+    };
+  }
+  
   // 按学习记录查询收藏
-  rpc GetFavoritesByStudyRecord(GetFavoritesByStudyRecordRequest) returns (GetFavoritesByStudyRecordResponse);
+  rpc GetFavoritesByStudyRecord(GetFavoritesByStudyRecordRequest) returns (GetFavoritesByStudyRecordResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/favorite/{user_id}/study-record"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "按学习记录查询收藏";
+      description: "根据学习结果筛选用户收藏";
+      tags: "收藏管理";
+    };
+  }
+  
   // 按记忆深度查询收藏
-  rpc GetFavoritesByMemoryDepth(GetFavoritesByMemoryDepthRequest) returns (GetFavoritesByMemoryDepthResponse);
+  rpc GetFavoritesByMemoryDepth(GetFavoritesByMemoryDepthRequest) returns (GetFavoritesByMemoryDepthResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/favorite/{user_id}/memory-depth/{memory_depth}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "按记忆深度查询收藏";
+      description: "获取指定记忆深度的用户收藏";
+      tags: "收藏管理";
+    };
+  }
+  
   // 添加学习记录
-  rpc AddStudyRecord(AddStudyRecordRequest) returns (AddStudyRecordResponse);
+  rpc AddStudyRecord(AddStudyRecordRequest) returns (AddStudyRecordResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/favorite/study-record"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "添加学习记录";
+      description: "记录用户的学习结果";
+      tags: "学习记录";
+    };
+  }
 }
 
 // 添加收藏请求

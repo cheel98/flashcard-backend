@@ -1,6 +1,6 @@
 # Makefile for Flashcard Backend
 
-.PHONY: help build run test clean proto deps
+.PHONY: help build run test clean proto openapi generate deps
 
 # 默认目标
 help:
@@ -10,6 +10,8 @@ help:
 	@echo "  test     - Run tests"
 	@echo "  clean    - Clean build artifacts"
 	@echo "  proto    - Generate protobuf code"
+	@echo "  openapi  - Generate OpenAPI documentation"
+	@echo "  generate - Generate both protobuf code and OpenAPI docs"
 	@echo "  deps     - Download dependencies"
 	@echo "  dev      - Run in development mode"
 
@@ -43,6 +45,16 @@ clean:
 proto:
 	@echo "Generating protobuf code..."
 	protoc --go_out=. --go-grpc_out=. proto/*
+
+# 生成OpenAPI文档
+openapi:
+	@echo "Generating OpenAPI documentation..."
+	@if not exist docs\openapi mkdir docs\openapi
+	set PATH=%PATH%;c:\e\0FFFFF\GOPATH\bin && protoc -I . -I google/api -I protoc-gen-openapiv2 --openapiv2_out=docs/openapi --openapiv2_opt=logtostderr=true --openapiv2_opt=allow_merge=true --openapiv2_opt=merge_file_name=flashcard_api proto/*.proto
+
+# 生成完整的protobuf和OpenAPI文档
+generate: proto openapi
+	@echo "Generated protobuf code and OpenAPI documentation"
 
 # 下载依赖
 deps:

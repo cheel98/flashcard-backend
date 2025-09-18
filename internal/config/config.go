@@ -20,9 +20,10 @@ type Config struct {
 
 // ServerConfig 服务器配置
 type ServerConfig struct {
-	Port int    `json:"port"`
-	Host string `json:"host"`
-	Env  string `json:"env"`
+	Port     int    `json:"port"`      // gRPC 端口
+	HTTPPort int    `json:"http_port"` // HTTP 端口 (gRPC-Gateway)
+	Host     string `json:"host"`
+	Env      string `json:"env"`
 }
 
 // DatabaseConfig 数据库配置
@@ -87,9 +88,10 @@ func LoadConfig() (*Config, error) {
 
 	config := &Config{
 		Server: ServerConfig{
-			Port: getEnvAsInt("SERVER_PORT", 8080),
-			Host: getEnv("SERVER_HOST", "localhost"),
-			Env:  getEnv("APP_ENV", "development"),
+			Port:     getEnvAsInt("SERVER_PORT", 8080),
+			HTTPPort: getEnvAsInt("HTTP_PORT", 8081),
+			Host:     getEnv("SERVER_HOST", "localhost"),
+			Env:      getEnv("APP_ENV", "development"),
 		},
 		Database: DatabaseConfig{
 			Host:     getEnv("DB_HOST", "localhost"),

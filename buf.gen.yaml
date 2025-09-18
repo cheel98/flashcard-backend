@@ -1,0 +1,15 @@
+version: v1
+plugins:
+  - plugin: go
+    out: ./
+    opt: paths=import
+  - plugin: go-grpc
+    out: ./
+    opt: paths=import
+  - plugin: grpc-gateway
+    out: ./
+    opt: paths=import
+  - plugin: buf.build/grpc-ecosystem/openapiv2:v2.20.0
+    out: ./swagger
+    opt:
+      - generate_unbound_methods=true

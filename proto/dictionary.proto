@@ -5,13 +5,49 @@ package dictionary;
 option go_package = "proto/generated/dictionary";
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Flashcard Backend Dictionary API";
+    version: "1.0";
+    description: "词典管理相关的API接口";
+  };
+  schemes: HTTP;
+  schemes: HTTPS;
+  consumes: "application/json";
+  produces: "application/json";
+};
 
 // Dictionary服务定义
 service DictionaryService {
   // 创建词典记录
-  rpc CreateDictionary(CreateDictionaryRequest) returns (CreateDictionaryResponse);
+  rpc CreateDictionary(CreateDictionaryRequest) returns (CreateDictionaryResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/dictionary"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "创建词典记录";
+      description: "创建新的词典翻译记录";
+      tags: "词典管理";
+    };
+  }
+  
   // 根据唯一翻译信息查询词典
-  rpc GetDictionaryByUniqueTranslation(GetDictionaryByUniqueTranslationRequest) returns (GetDictionaryByUniqueTranslationResponse);
+  rpc GetDictionaryByUniqueTranslation(GetDictionaryByUniqueTranslationRequest) returns (GetDictionaryByUniqueTranslationResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/dictionary/translation"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "根据翻译信息查询词典";
+      description: "通过源语言、目标语言和源文本查询词典记录";
+      tags: "词典管理";
+    };
+  }
 }
 
 
